@@ -15,6 +15,7 @@ making replay / phone-display attacks much harder to bypass.
 from __future__ import annotations
 
 import asyncio
+import sys
 import threading
 import time
 from typing import Optional
@@ -64,7 +65,12 @@ class CameraManager:
             return True
 
         logger.info(f"Opening camera index={self._camera_index} ({self._width}x{self._height})")
-        cap = cv2.VideoCapture(self._camera_index, cv2.CAP_DSHOW)
+        # CAP_DSHOW is Windows-only. On Linux (e.g. Railway), passing CAP_DSHOW
+        # can cause the capture open to fail even if a camera exists.
+        if sys.platform.startswith("win"):
+            cap = cv2.VideoCapture(self._camera_index, cv2.CAP_DSHOW)
+        else:
+            cap = cv2.VideoCapture(self._camera_index)
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, self._width)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self._height)
         cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
@@ -134,10 +140,18 @@ class CameraManager:
         the first client. Returns True if the camera is available.
         """
         with self._client_lock:
+            # IMPORTANT: only increment the client count if the camera is
+            # actually available. Otherwise, repeated failed connections
+            # (common on cloud hosts with no webcam) would leak the count.
+            if self._client_count == 0:
+                if not self._start_capture():
+                    return False
+                self._client_count = 1
+                logger.info(f"Camera client count: {self._client_count}")
+                return True
+
             self._client_count += 1
             logger.info(f"Camera client count: {self._client_count}")
-            if self._client_count == 1:
-                return self._start_capture()
             return self._running
 
     def release(self) -> None:
