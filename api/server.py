@@ -149,16 +149,29 @@ def create_app() -> FastAPI:
     )
 
     # CORS — restrict in production
-    allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "*")
-    allowed_origins = (
-        ["*"]
-        if allowed_origins_str == "*"
-        else [o.strip() for o in allowed_origins_str.split(",")]
-    )
+    # NOTE: In Railway, an empty env var (ALLOWED_ORIGINS="") would otherwise
+    # become [""] and effectively DISABLE CORS. We treat empty/blank as "*".
+    allowed_origins_str = (os.getenv("ALLOWED_ORIGINS") or "*").strip()
+    if not allowed_origins_str:
+        allowed_origins_str = "*"
+
+    if allowed_origins_str == "*":
+        allowed_origins = ["*"]
+    else:
+        allowed_origins = [
+            o.strip().rstrip("/")
+            for o in allowed_origins_str.split(",")
+            if o.strip()
+        ]
+        if not allowed_origins:
+            allowed_origins = ["*"]
+
+    allow_any_origin = allowed_origins == ["*"]
+    origin_regex = ".*" if allow_any_origin else None
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
-        allow_origin_regex=".*" if allowed_origins == ["*"] else None,
+        allow_origin_regex=origin_regex,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
