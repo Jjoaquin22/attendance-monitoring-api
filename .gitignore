@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.egg-info/
+
+# Virtual env
+.venv/
+venv/
+ENV/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Model / run artifacts
+runs/
+api/runs/
+recognition/runs/
+
+# Training datasets / artifacts
+datasets/
+**/datasets/
+training/datasets/
+training/**/datasets/
+
+# Common large model weights (keep if you intentionally want them tracked)
+*.onnx
+*.h5
+*.tflite
+
+# Local databases
+*.db
+*.db-wal
+*.db-shm
+
+# Local env files
+.env
+.env.*
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Editor
+.vscode/
+.idea/
