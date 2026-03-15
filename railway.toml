@@ -2,4 +2,4 @@
 builder = "DOCKERFILE"
 
 [deploy]
-startCommand = "uvicorn api.server:app --host 0.0.0.0 --port $PORT"
+startCommand = "sh -c \"uvicorn api.server:app --host 0.0.0.0 --port ${PORT:-8000}\""
