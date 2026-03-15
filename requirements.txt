@@ -14,9 +14,8 @@ python-multipart>=0.0.6
 SQLAlchemy>=2.0.0
 aiosqlite>=0.19.0
 
-# --- Computer Vision / Numerical ---
+# --- Numerical / Images ---
 numpy>=1.24.0
-opencv-python-headless>=4.8.0
 Pillow>=10.0.0
 
 # --- Similarity Search ---
@@ -25,6 +24,11 @@ faiss-cpu>=1.7.4
 # --- Recognition Engine (DeepFace) ---
 deepface>=0.0.93
 tf-keras>=2.16.0
+
+# OpenCV
+# DeepFace depends on OpenCV; force the headless wheel to avoid
+# GUI/X11 runtime dependencies.
+opencv-python-headless>=4.8.0
 
 # --- Utilities ---
 tqdm>=4.66.0

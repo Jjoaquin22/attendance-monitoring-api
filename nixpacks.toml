@@ -1,0 +1,12 @@
+# Nixpacks config for Railway
+# Ensures native shared libraries required by some Python wheels are present.
+
+[phases.setup]
+# libxcb is required by some OpenCV builds (ImportError: libxcb.so.1).
+# We include a minimal Xorg stack to avoid runtime import crashes.
+nixPkgs = [
+  "xorg.libxcb",
+  "xorg.libX11",
+  "xorg.libXext",
+  "xorg.libXrender",
+]
