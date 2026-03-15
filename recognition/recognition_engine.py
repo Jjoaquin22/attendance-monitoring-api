@@ -137,8 +137,20 @@ class RecognitionEngine:
         DeepFace.build_model(model_name)
 
         if anti_spoofing:
-            logger.info("Pre-loading DeepFace anti-spoofing model (FasNet)...")
-            DeepFace.build_model("Fasnet", task="spoofing")
+            # FasNet anti-spoofing in DeepFace requires torch. On slim containers
+            # (e.g. Railway), installing torch can be heavy and is optional.
+            # If torch isn't available, disable anti-spoofing instead of crashing
+            # the whole API on startup.
+            try:
+                import torch  # noqa: F401
+                logger.info("Pre-loading DeepFace anti-spoofing model (FasNet)...")
+                DeepFace.build_model("Fasnet", task="spoofing")
+            except Exception as exc:
+                self.anti_spoofing_enabled = False
+                logger.warning(
+                    "Anti-spoofing disabled (torch/FasNet unavailable). "
+                    f"Set ANTI_SPOOFING=false to silence this warning. Reason: {exc}"
+                )
 
         self._embedding_dim = _MODEL_DIMS.get(model_name, 512)
         logger.info(f"  embedding_dim:    {self._embedding_dim}")
